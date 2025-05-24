@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="chart"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+  const data = {{ data | tojson }};
+
+  const margin = { top: 60, right: 30, bottom: 60, left: 80 },
+        width = 600 - margin.left - margin.right,
+        height = 600 - margin.top - margin.bottom;
+
+  const svg = d3.select("#chart")
+    .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const allPoints = data.flatMap(d => d.data);
+
+  const x = d3.scaleLog()
+    .domain(d3.extent(allPoints, d => d[0]))
+    .range([0, width]);
+
+  const y = d3.scaleLog()
+    .domain(d3.extent(allPoints, d => d[1]))
+    .range([height, 0]);
+
+  const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+  svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(10, d3.format(".0e")));
+
+  svg.append("g")
+    .call(d3.axisLeft(y).ticks(10, d3.format(".0e")));
+
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", -30)
+    .attr("text-anchor", "middle")
+    .style("font-size", "14px")
+    .text("WIMP Cross Section vs Mass");
+
+  svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -60)
+    .attr("text-anchor", "middle")
+    .style("font-size", "12px")
+    .text("WIMP Mass [GeV/c²]");
+
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + 50)
+    .attr("text-anchor", "middle")
+    .style("font-size", "12px")
+    .text("Cross Section [cm²] (normalized to nucleon)");
+
+  data.forEach((series, i) => {
+    svg.append("path")
+      .datum(series.data)
+      .attr("fill", "none")
+      .attr("stroke", color(i))
+      .attr("stroke-width", 1.5)
+      .attr("d", d3.line()
+        .x(d => x(d[0]))
+        .y(d => y(d[1]))
+      );
+  });
+</script>
+{% endblock %}
