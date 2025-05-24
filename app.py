@@ -57,5 +57,15 @@ async def d3_dmtools_grammar():
 
     return await render_template("d3_dmtools_grammar.html", data=data, chart_spec=chart_spec, display_spec=display_spec)
 
+@app.route("/gantt")
+async def gantt_chart():
+    # Example task data
+    tasks = [
+        {"name": "Task A", "start": "2025-05-01", "end": "2025-05-05"},
+        {"name": "Task B", "start": "2025-05-03", "end": "2025-05-10"},
+        {"name": "Task C", "start": "2025-05-06", "end": "2025-05-09"}
+    ]
+    return await render_template("gantt.html", tasks=tasks)
+
 if __name__ == '__main__':
     app.run(debug=True)
