@@ -65,7 +65,7 @@ async def gantt_chart():
         {"name": "Task B", "start": "2025-05-03", "end": "2025-05-10"},
         {"name": "Task C", "start": "2025-05-06", "end": "2025-05-09"}
     ]
-    return await render_template("gantt.html", tasks=tasks)
+    return await render_template("d3_gantt.html", tasks=tasks)
 
 if __name__ == '__main__':
     app.run(debug=True)
