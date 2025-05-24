@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="chart"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+  const data = {{ data | tojson }};
+  const spec = {{ spec | tojson }};
+
+  const margin = spec.margin || { top: 60, right: 30, bottom: 60, left: 80 },
+        width = (spec.width || 600) - margin.left - margin.right,
+        height = (spec.height || 600) - margin.top - margin.bottom;
+
+  const svg = d3.select("#chart")
+    .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const allPoints = data.flatMap(d => d[spec.geom.dataKey || "data"]);
+
+  const xScale = spec.scales?.x === "log" ? d3.scaleLog() : d3.scaleLinear();
+  const yScale = spec.scales?.y === "log" ? d3.scaleLog() : d3.scaleLinear();
+
+  const x = xScale.domain(d3.extent(allPoints, d => d[spec.aes.x])).range([0, width]);
+  const y = yScale.domain(d3.extent(allPoints, d => d[spec.aes.y])).range([height, 0]);
+
+  const color = d3.scaleOrdinal(spec.colorScheme || d3.schemeCategory10);
+
+  // Axes
+  svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(10, spec.tickFormat || d3.format(".0e")));
+
+  svg.append("g")
+    .call(d3.axisLeft(y).ticks(10, spec.tickFormat || d3.format(".0e")));
+
+  // Labels
+  if (spec.labels?.title) {
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", -margin.top / 2)
+      .attr("text-anchor", "middle")
+      .style("font-size", "14px")
+      .text(spec.labels.title);
+  }
+
+  if (spec.labels?.y) {
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -height / 2)
+      .attr("y", -margin.left + 20)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text(spec.labels.y);
+  }
+
+  if (spec.labels?.x) {
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", height + margin.bottom - 10)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text(spec.labels.x);
+  }
+
+  // Geom: line
+  if (spec.geom?.type === "line") {
+    data.forEach((series, i) => {
+      svg.append("path")
+        .datum(series[spec.geom.dataKey || "data"])
+        .attr("fill", "none")
+        .attr("stroke", color(i))
+        .attr("stroke-width", spec.geom.strokeWidth || 1.5)
+        .attr("d", d3.line()
+          .x(d => x(d[spec.aes.x]))
+          .y(d => y(d[spec.aes.y]))
+        );
+    });
+  }
+
+  // Add more geoms (point, area, etc.) if needed
+</script>
+{% endblock %}
