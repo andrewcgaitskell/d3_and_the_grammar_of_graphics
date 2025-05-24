@@ -67,5 +67,15 @@ async def gantt_chart():
     ]
     return await render_template("d3_gantt.html", tasks=tasks)
 
+@app.route("/milestone")
+async def milestone():
+    tasks = [
+        {"id": "1", "name": "Task A", "start": "2025-05-01", "end": "2025-05-05"},
+        {"id": "2", "name": "Task B", "start": "2025-05-03", "end": "2025-05-10", "depends_on": "1"},
+        {"id": "3", "name": "Task C", "start": "2025-05-06", "end": "2025-05-09", "milestone": True},
+        {"id": "4", "name": "Task D", "start": "2025-05-09", "end": "2025-05-12", "depends_on": "2"},
+    ]
+    return await render_template("d3_milestone.html", tasks=tasks)
+
 if __name__ == '__main__':
     app.run(debug=True)
