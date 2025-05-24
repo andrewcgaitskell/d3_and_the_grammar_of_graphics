@@ -44,13 +44,18 @@ async def d3_dmtools_e():
 async def d3_dmtools_grammar():
     data_file_path = os.path.join("data", "dmtools_e.json")
     spec_file_path = os.path.join("data", "chart_spec_grammar.json")
+    display_file_path = os.path.join("data", "displays_grammar.json")
+    
     with open(data_file_path) as f:
         data = json.load(f)
         
     with open(spec_file_path) as s:
         chart_spec = json.load(s)
 
-    return await render_template("d3_dmtools_grammar.html", data=data, chart_spec=chart_spec)
+    with open(display_file_path) as d:
+        display_spec = json.load(s)
+
+    return await render_template("d3_dmtools_grammar.html", data=data, chart_spec=chart_spec, display_spec=display_spec)
 
 if __name__ == '__main__':
     app.run(debug=True)
