@@ -44,7 +44,7 @@ async def d3_dmtools_e():
 async def d3_dmtools_grammar():
     data_file_path = os.path.join("data", "dmtools_e.json")
     spec_file_path = os.path.join("data", "chart_spec_grammar.json")
-    display_file_path = os.path.join("data", "displays_grammar.json")
+    display_file_path = os.path.join("data", "dmtools_displays_spec.json")
     
     with open(data_file_path) as f:
         data = json.load(f)
