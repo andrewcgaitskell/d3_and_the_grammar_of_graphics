@@ -53,7 +53,7 @@ async def d3_dmtools_grammar():
         chart_spec = json.load(s)
 
     with open(display_file_path) as d:
-        display_spec = json.load(s)
+        display_spec = json.load(d)
 
     return await render_template("d3_dmtools_grammar.html", data=data, chart_spec=chart_spec, display_spec=display_spec)
 
