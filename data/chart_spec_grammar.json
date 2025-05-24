@@ -1,0 +1,32 @@
+{
+  "layout": {
+    "width": 800,
+    "height": 600,
+    "margin": { "top": 60, "right": 30, "bottom": 60, "left": 80 }
+  },
+  "scales": {
+    "x": {
+      "type": "log",
+      "ticks": 10,
+      "format": ".0e"
+    },
+    "y": {
+      "type": "log",
+      "ticks": 10,
+      "format": ".0e"
+    }
+  },
+  "color": {
+    "scheme": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"]
+  },
+  "labels": {
+    "title": { "text": "WIMP Cross Section vs Mass", "size": "16px" },
+    "x": { "text": "WIMP Mass [GeV/c²]", "size": "12px" },
+    "y": { "text": "Cross Section [cm²] (normalized to nucleon)", "size": "12px" }
+  },
+  "marks": {
+    "line": {
+      "strokeWidth": 1.5
+    }
+  }
+}
