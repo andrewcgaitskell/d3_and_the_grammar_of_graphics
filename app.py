@@ -19,5 +19,12 @@ async def get_dmtools_data():
 
     return jsonify(data)
 
+@app.route('/chart')
+async def chart():
+    file_path = os.path.join("data", "dmtools.json")
+    with open(file_path, "r") as f:
+        data = json.load(f)
+    return await render_template("index.html", dmtools=data)
+
 if __name__ == '__main__':
     app.run(debug=True)
