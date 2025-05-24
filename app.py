@@ -31,7 +31,7 @@ async def d3_dmtools():
     file_path = os.path.join("data", "dmtools.json")
     with open(file_path, "r") as f:
         data = json.load(f)
-    return await render_template("d3_dmtools.html", dmtools=data)
+    return await render_template("d3_dmtools.html", data=data)
 
 if __name__ == '__main__':
     app.run(debug=True)
