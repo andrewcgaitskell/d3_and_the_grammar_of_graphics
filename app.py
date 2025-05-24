@@ -43,7 +43,7 @@ async def d3_dmtools_e():
 @app.route("/d3_dmtools_grammar")
 async def d3_dmtools_grammar():
     data_file_path = os.path.join("data", "dmtools_e.json")
-    spec_file_path = os.path.join("data", "chart_spec.json")
+    spec_file_path = os.path.join("data", "chart_spec_grammar.json")
     with open(data_file_path) as f:
         data = json.load(f)
         
