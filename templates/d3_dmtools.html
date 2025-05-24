@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DMTools D3 Plot</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #98A4AE;
+      margin: 0;
+      padding: 0;
+    }
+    svg {
+      background-color: white;
+      display: block;
+      margin: auto;
+      border: 1px solid black;
+    }
+    .axis-label {
+      font-size: 8px;
+    }
+    .plot-title {
+      text-anchor: middle;
+      font-size: 8px;
+    }
+  </style>
+</head>
+<body>
+  <svg id="chart" width="600" height="600"></svg>
+
+  <script>
+    d3.json("/data/dmtools.json").then(function(data) {
+      const svg = d3.select("#chart"),
+            width = +svg.attr("width"),
+            height = +svg.attr("height"),
+            margin = { top: 30, right: 30, bottom: 50, left: 50 },
+            innerWidth = width - margin.left - margin.right,
+            innerHeight = height - margin.top - margin.bottom;
+
+      const g = svg.append("g")
+                   .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      const flatData = data.map(d => d.data).flat();
+
+      const x = d3.scaleLog()
+                  .domain(d3.extent(flatData, d => d[0]))
+                  .range([0, innerWidth]);
+
+      const y = d3.scaleLog()
+                  .domain(d3.extent(flatData, d => d[1]))
+                  .range([innerHeight, 0]);
+
+      const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+      g.append("g")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(x).ticks(10, ".1s"));
+
+      g.append("g")
+        .call(d3.axisLeft(y).ticks(10, ".1s"));
+
+      g.append("text")
+        .attr("class", "axis-label")
+        .attr("x", innerWidth / 2)
+        .attr("y", innerHeight + 40)
+        .style("text-anchor", "middle")
+        .text("Cross Section [cm²] (normalized to nucleon)");
+
+      g.append("text")
+        .attr("class", "axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -innerHeight / 2)
+        .attr("y", -35)
+        .style("text-anchor", "middle")
+        .text("WIMP Mass [GeV/c²]");
+
+      svg.append("text")
+        .attr("class", "plot-title")
+        .attr("x", width / 2)
+        .attr("y", 15)
+        .text("WIMP Cross Section vs Mass (D3 Rendered)");
+
+      data.forEach((trace, i) => {
+        g.append("path")
+         .datum(trace.data)
+         .attr("fill", "none")
+         .attr("stroke", color(trace.name))
+         .attr("stroke-width", 1.5)
+         .attr("d", d3.line()
+           .x(d => x(d[0]))
+           .y(d => y(d[1]))
+         );
+      });
+    });
+  </script>
+</body>
+</html>
