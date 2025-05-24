@@ -63,19 +63,34 @@
   data.forEach(series => {
     const display = displaySpec[series.name] || {};
     const strokeColor = display.color || "#000";
-    const lineStyle = display.style === "dotted" ? "4,2" : "none";
-    const fillStyle = display.style === "dotted" ? "4,2" : "none";
+    const style = display.style || "solid";
 
-    svg.append("path")
-      .datum(series.data)
-      .attr("fill", "none")
-      .attr("stroke", strokeColor)
-      .attr("stroke-width", chartSpec.marks.line.strokeWidth)
-      .attr("stroke-dasharray", lineStyle)
-      .attr("d", d3.line()
-        .x(d => x(d[0]))
-        .y(d => y(d[1]))
-      );
+    if (style === "fill") {
+      // Closed polygon fill path
+      svg.append("path")
+        .datum(series.data)
+        .attr("fill", strokeColor)
+        .attr("stroke", strokeColor)
+        .attr("stroke-width", chartSpec.marks.line.strokeWidth)
+        .attr("d", d3.line()
+          .x(d => x(d[0]))
+          .y(d => y(d[1]))
+          .curve(d3.curveLinearClosed) // close path to fill inside
+        );
+    } else {
+      // Solid or dotted line
+      const strokeDash = style === "dotted" ? "4,2" : "none";
+      svg.append("path")
+        .datum(series.data)
+        .attr("fill", "none")
+        .attr("stroke", strokeColor)
+        .attr("stroke-width", chartSpec.marks.line.strokeWidth)
+        .attr("stroke-dasharray", strokeDash)
+        .attr("d", d3.line()
+          .x(d => x(d[0]))
+          .y(d => y(d[1]))
+        );
+    }
   });
 </script>
 {% endblock %}
