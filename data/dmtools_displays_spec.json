@@ -1,8 +1,8 @@
 {
-  "d": { "color": "#1f77b4", "style": "solid" },
+  "d": { "color": "#1f77b4", "style": "fill" },
   "m": { "color": "#ff7f0e", "style": "dotted" },
   "t": { "color": "#2ca02c", "style": "solid" },
-  "o1": { "color": "#d62728", "style": "dotted" },
+  "o1": { "color": "#d62728", "style": "fill" },
   "o2": { "color": "#9467bd", "style": "solid" },
   "l": { "color": "#8c564b", "style": "dotted" }
 }
