@@ -67,15 +67,52 @@ async def gantt_chart():
     ]
     return await render_template("d3_gantt.html", tasks=tasks)
 
-@app.route("/milestone")
-async def milestone():
-    tasks = [
-        {"id": "1", "name": "Task A", "start": "2025-05-01", "end": "2025-05-05"},
-        {"id": "2", "name": "Task B", "start": "2025-05-03", "end": "2025-05-10", "depends_on": "1"},
-        {"id": "3", "name": "Task C", "start": "2025-05-06", "end": "2025-05-09", "milestone": True},
-        {"id": "4", "name": "Task D", "start": "2025-05-09", "end": "2025-05-12", "depends_on": "2"},
+@app.route("/sequenced")
+async def sequenced():
+    # Step 1: Raw input task data
+    raw_tasks = [
+        {"id": "1", "name": "Task A", "start": "2025-05-01", "duration": 4},
+        {"id": "2", "name": "Task B", "duration": 5, "depends_on": "1"},
+        {"id": "3", "name": "Milestone C", "duration": 0, "depends_on": "2", "milestone": True},
+        {"id": "4", "name": "Task D", "duration": 3, "depends_on": "2"},
     ]
-    return await render_template("d3_milestone.html", tasks=tasks)
+
+    print("Raw Tasks Input:")
+    for t in raw_tasks:
+        print(t)
+
+    # Step 2: Build full task list with sequencing
+    task_map = {}
+    processed_tasks = []
+
+    for task in raw_tasks:
+        # Determine start date
+        if "depends_on" in task:
+            predecessor = task_map[task["depends_on"]]
+            start_date = datetime.strptime(predecessor["end"], "%Y-%m-%d") + timedelta(days=1)
+        else:
+            start_date = datetime.strptime(task["start"], "%Y-%m-%d")
+
+        # Determine end date based on duration
+        duration = task.get("duration", 0)
+        end_date = start_date + timedelta(days=max(duration - 1, 0))
+
+        # Format dates
+        task["start"] = start_date.strftime("%Y-%m-%d")
+        task["end"] = end_date.strftime("%Y-%m-%d")
+
+        # Save to maps
+        task_map[task["id"]] = task
+        processed_tasks.append(task)
+
+        print(f"Processed Task {task['id']}: start={task['start']}, end={task['end']}")
+
+    print("Final Sequenced Task List:")
+    for t in processed_tasks:
+        print(t)
+
+    # Step 3: Render
+    return await render_template("d3_sequenced.html", tasks=processed_tasks)
 
 if __name__ == '__main__':
     app.run(debug=True)
