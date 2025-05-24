@@ -5,81 +5,76 @@
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script>
   const data = {{ data | tojson }};
-  const spec = {{ spec | tojson }};
+  const chartSpec = {{ chart_spec | tojson }};
 
-  const margin = spec.margin || { top: 60, right: 30, bottom: 60, left: 80 },
-        width = (spec.width || 600) - margin.left - margin.right,
-        height = (spec.height || 600) - margin.top - margin.bottom;
+  const margin = chartSpec.layout.margin;
+  const width = chartSpec.layout.width - margin.left - margin.right;
+  const height = chartSpec.layout.height - margin.top - margin.bottom;
 
   const svg = d3.select("#chart")
     .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
     .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  const allPoints = data.flatMap(d => d[spec.geom.dataKey || "data"]);
+  const allPoints = data.flatMap(d => d.data);
 
-  const xScale = spec.scales?.x === "log" ? d3.scaleLog() : d3.scaleLinear();
-  const yScale = spec.scales?.y === "log" ? d3.scaleLog() : d3.scaleLinear();
+  // Create scales from spec
+  const x = chartSpec.scales.x.type === "log" ? d3.scaleLog() : d3.scaleLinear();
+  const y = chartSpec.scales.y.type === "log" ? d3.scaleLog() : d3.scaleLinear();
 
-  const x = xScale.domain(d3.extent(allPoints, d => d[spec.aes.x])).range([0, width]);
-  const y = yScale.domain(d3.extent(allPoints, d => d[spec.aes.y])).range([height, 0]);
-
-  const color = d3.scaleOrdinal(spec.colorScheme || d3.schemeCategory10);
+  x.domain(d3.extent(allPoints, d => d[0])).range([0, width]);
+  y.domain(d3.extent(allPoints, d => d[1])).range([height, 0]);
 
   // Axes
+  const xAxis = d3.axisBottom(x).ticks(chartSpec.scales.x.ticks, chartSpec.scales.x.format);
+  const yAxis = d3.axisLeft(y).ticks(chartSpec.scales.y.ticks, chartSpec.scales.y.format);
+
   svg.append("g")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x).ticks(10, spec.tickFormat || d3.format(".0e")));
+    .call(xAxis);
 
   svg.append("g")
-    .call(d3.axisLeft(y).ticks(10, spec.tickFormat || d3.format(".0e")));
+    .call(yAxis);
 
-  // Labels
-  if (spec.labels?.title) {
-    svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", -margin.top / 2)
-      .attr("text-anchor", "middle")
-      .style("font-size", "14px")
-      .text(spec.labels.title);
-  }
+  // Titles
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", -margin.top / 2)
+    .attr("text-anchor", "middle")
+    .style("font-size", chartSpec.labels.title.size)
+    .text(chartSpec.labels.title.text);
 
-  if (spec.labels?.y) {
-    svg.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -height / 2)
-      .attr("y", -margin.left + 20)
-      .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text(spec.labels.y);
-  }
+  svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 20)
+    .attr("text-anchor", "middle")
+    .style("font-size", chartSpec.labels.y.size)
+    .text(chartSpec.labels.y.text);
 
-  if (spec.labels?.x) {
-    svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", height + margin.bottom - 10)
-      .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .text(spec.labels.x);
-  }
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .attr("text-anchor", "middle")
+    .style("font-size", chartSpec.labels.x.size)
+    .text(chartSpec.labels.x.text);
 
-  // Geom: line
-  if (spec.geom?.type === "line") {
-    data.forEach((series, i) => {
-      svg.append("path")
-        .datum(series[spec.geom.dataKey || "data"])
-        .attr("fill", "none")
-        .attr("stroke", color(i))
-        .attr("stroke-width", spec.geom.strokeWidth || 1.5)
-        .attr("d", d3.line()
-          .x(d => x(d[spec.aes.x]))
-          .y(d => y(d[spec.aes.y]))
-        );
-    });
-  }
+  // Color scale
+  const color = d3.scaleOrdinal(chartSpec.color.scheme);
 
-  // Add more geoms (point, area, etc.) if needed
+  // Draw lines
+  data.forEach((series, i) => {
+    svg.append("path")
+      .datum(series.data)
+      .attr("fill", "none")
+      .attr("stroke", color(series.name))
+      .attr("stroke-width", chartSpec.marks.line.strokeWidth)
+      .attr("d", d3.line()
+        .x(d => x(d[0]))
+        .y(d => y(d[1]))
+      );
+  });
 </script>
 {% endblock %}
