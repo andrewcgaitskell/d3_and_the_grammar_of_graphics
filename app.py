@@ -24,7 +24,7 @@ async def chart():
     file_path = os.path.join("data", "dmtools.json")
     with open(file_path, "r") as f:
         data = json.load(f)
-    return await render_template("index.html", dmtools=data)
+    return await render_template("dmtools.html", dmtools=data)
 
 if __name__ == '__main__':
     app.run(debug=True)
