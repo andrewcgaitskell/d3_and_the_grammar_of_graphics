@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="chart"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+  const data = {{ data | tojson }};
+  const chartSpec = {{ chart_spec | tojson }};
+  const displaySpec = {{ display_spec | tojson }};
+
+  const margin = chartSpec.layout.margin;
+  const width = chartSpec.layout.width - margin.left - margin.right;
+  const height = chartSpec.layout.height - margin.top - margin.bottom;
+
+  const svg = d3.select("#chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const allPoints = data.flatMap(d => d.data);
+
+  // Scales
+  const x = chartSpec.scales.x.type === "log" ? d3.scaleLog() : d3.scaleLinear();
+  const y = chartSpec.scales.y.type === "log" ? d3.scaleLog() : d3.scaleLinear();
+
+  x.domain(d3.extent(allPoints, d => d[0])).range([0, width]);
+  y.domain(d3.extent(allPoints, d => d[1])).range([height, 0]);
+
+  // Axes
+  svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(chartSpec.scales.x.ticks, chartSpec.scales.x.format));
+
+  svg.append("g")
+    .call(d3.axisLeft(y).ticks(chartSpec.scales.y.ticks, chartSpec.scales.y.format));
+
+  // Labels
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", -margin.top / 2)
+    .attr("text-anchor", "middle")
+    .style("font-size", chartSpec.labels.title.size)
+    .text(chartSpec.labels.title.text);
+
+  svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 20)
+    .attr("text-anchor", "middle")
+    .style("font-size", chartSpec.labels.y.size)
+    .text(chartSpec.labels.y.text);
+
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .attr("text-anchor", "middle")
+    .style("font-size", chartSpec.labels.x.size)
+    .text(chartSpec.labels.x.text);
+
+  // Draw each series
+  data.forEach(series => {
+    const display = displaySpec[series.name] || {};
+    const strokeColor = display.color || "#000";
+    const lineStyle = display.style === "dotted" ? "4,2" : "none";
+    const fillStyle = display.style === "dotted" ? "4,2" : "none";
+
+    svg.append("path")
+      .datum(series.data)
+      .attr("fill", "none")
+      .attr("stroke", strokeColor)
+      .attr("stroke-width", chartSpec.marks.line.strokeWidth)
+      .attr("stroke-dasharray", lineStyle)
+      .attr("d", d3.line()
+        .x(d => x(d[0]))
+        .y(d => y(d[1]))
+      );
+  });
+</script>
+{% endblock %}
