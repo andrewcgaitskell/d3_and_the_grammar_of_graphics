@@ -1,4 +1,4 @@
-from quart import Quart, jsonify, send_file
+from quart import Quart, jsonify, send_file, render_template
 import os
 import json
 
