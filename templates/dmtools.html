@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DMTOOLS Chart</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    svg {
+      border: 1px solid #ccc;
+    }
+    path {
+      fill: none;
+      stroke: steelblue;
+      stroke-width: 2px;
+    }
+    .trace-label {
+      font-size: 10px;
+      fill: darkred;
+    }
+  </style>
+</head>
+<body>
+  <h1>DMTOOLS Line Plot</h1>
+  <svg id="chart" width="800" height="200"></svg>
+
+  <script>
+    const data = {{ dmtools | tojson }};
+    
+    const svg = d3.select("#chart");
+    const width = +svg.attr("width");
+    const height = +svg.attr("height");
+
+    const allPoints = data.flatMap(d => d.data);
+    const xExtent = d3.extent(allPoints, d => d[0]);
+    const yExtent = d3.extent(allPoints, d => d[1]);
+
+    const xScale = d3.scaleLinear().domain(xExtent).range([20, width - 20]);
+    const yScale = d3.scaleLinear().domain(yExtent).range([height - 20, 20]);
+
+    const line = d3.line()
+      .x(d => xScale(d[0]))
+      .y(d => yScale(d[1]));
+
+    svg.selectAll("path")
+      .data(data)
+      .enter()
+      .append("path")
+      .attr("d", d => line(d.data))
+      .attr("stroke", (d, i) => d3.schemeCategory10[i % 10]);
+
+    svg.selectAll(".trace-label")
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("class", "trace-label")
+      .attr("x", d => xScale(d.data[0][0]))
+      .attr("y", d => yScale(d.data[0][1]))
+      .text(d => d.name);
+  </script>
+</body>
+</html>
